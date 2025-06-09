@@ -33,17 +33,21 @@ class CoolParser():
                 #print(page.layout)
                 #print(page.structuredData)
 
+            return result
+
         except Exception as e:
             print("Error parsing file:", e)
 
 
-# Parse a single page
-file_path = "extracted_page1.pdf"  # Replace with the path to your PDF file
+if __name__ == "__main__":
+        
+    # Parse a single page
+    file_path = "extracted_page1.pdf"  # Replace with the path to your PDF file
 
-parser = CoolParser()
-parsed_data = parser.parse_page(file_path)
+    parser = CoolParser()
+    parsed_data = parser.parse_page(file_path)
 
 
-### MAYBE:
-# Headings & subheadings could be used to navigate the document faster
-# only body text used to extract the main content when the body of text has been identified
+    ### MAYBE:
+    # Headings & subheadings could be used to navigate the document faster
+    # only body text used to extract the main content when the body of text has been identified

@@ -2,10 +2,12 @@ from llama_cloud_services import LlamaParse
 from dotenv import load_dotenv
 import os
 
+load_dotenv()
+
 api_key = os.getenv("API_KEY")
 
 class CoolParser():
-    def __init__(self, api_key=key, num_workers=4, verbose=True, language="en", result_type="markdown"):
+    def __init__(self, api_key=api_key, num_workers=4, verbose=True, language="en", result_type="markdown"):
         self.parser = LlamaParse(api_key=api_key, num_workers=num_workers, verbose=verbose, language=language, result_type=result_type)
         
     def parse_page(self, file_path):

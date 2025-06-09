@@ -32,6 +32,9 @@ This assignment aims to explore the usage of knowledge graphs in answering quest
 * [LangChain](https://neo4j.com/labs/genai-ecosystem/langchain/#\_knowledge_graph_construction)
 * [LlamaIndex](https://neo4j.com/labs/genai-ecosystem/llamaindex/)
 
+# CURRENT STRUCT
+
+![visualisation (1)](https://github.com/user-attachments/assets/71ddad47-0183-4ef1-a292-3c78d6bbdc82)
 
 Layers:
 

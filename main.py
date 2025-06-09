@@ -29,7 +29,7 @@ class CoolParser():
             for page in result.pages:
                 #print(page.text)
                 print(page.md)
-                print(page.images)
+                #print(page.images)
                 #print(page.layout)
                 #print(page.structuredData)
 

@@ -31,3 +31,37 @@ This assignment aims to explore the usage of knowledge graphs in answering quest
 * [Neo4j / OpenAI](https://neo4j.com/blog/news/graphrag-python-package/)
 * [LangChain](https://neo4j.com/labs/genai-ecosystem/langchain/#\_knowledge_graph_construction)
 * [LlamaIndex](https://neo4j.com/labs/genai-ecosystem/llamaindex/)
+
+
+Layers:
+
+1. THEMES
+- Headings: Fishing, Forestry, Planted Forests, Natural Forests
+
+2. HEADINGS
+
+Fishing
+- content
+
+Forestry
+- content
+-> Planted Forests: Agriculture
+
+Planted Forests
+- content
+-> Natural Forests: Man-made
+
+Natural Forests
+- content
+-> Planted Forests: Theseus
+
+
+// Here's some useful Cypher Scripts:
+
+// Master node:
+MERGE (t:Themes {name: "All Themes"})
+SET t.themes = ["Fishing", "Forestry", "Planted Forests", "Natural Forests"];
+
+// Content nodes:
+MERGE (a:Themes {name: "Fishing"})
+SET a.content = <str>

@@ -61,7 +61,6 @@ def markdown_to_csv(markdown_text, csv_path):
     # Write to CSV
     with open(csv_path, 'w', encoding='utf-8', newline='') as csvfile:
         writer = csv.writer(csvfile)
-        writer.writerow(['Themes', [heading for heading, _ in entries]])
         for heading, content in entries:
             writer.writerow([heading, content])
 

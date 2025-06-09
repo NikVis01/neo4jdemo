@@ -34,7 +34,7 @@ This assignment aims to explore the usage of knowledge graphs in answering quest
 
 # CURRENT STRUCT
 
-![visualisation (1)](https://github.com/user-attachments/assets/71ddad47-0183-4ef1-a292-3c78d6bbdc82)
+![image](https://github.com/user-attachments/assets/5b203a86-ded3-4cc3-badf-d2f7d527ca78)
 
 Layers:
 

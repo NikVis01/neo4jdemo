@@ -1,6 +1,8 @@
-key = "llx-atTZb1KavBM7EcALjbcLZtGmwWEYXEGwK9VfkjFBzwPSIW6X"
-
 from llama_cloud_services import LlamaParse
+from dotenv import load_dotenv
+import os
+
+api_key = os.getenv("API_KEY")
 
 class CoolParser():
     def __init__(self, api_key=key, num_workers=4, verbose=True, language="en", result_type="markdown"):

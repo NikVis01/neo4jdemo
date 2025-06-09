@@ -87,10 +87,17 @@ WHERE theme.name IN ["Fishing", "Forestry", "Planted Forests", "Natural Forests"
 MERGE (root)-[:HAS_THEME]->(theme)
 
 
-
 ## TODO LIST (SOME IDEAS)
 
 1. Greater node granularity and adhesion to textbook struct such as:
    (Chapter: {name: "Human Activities", "pages: 0-whatever, embedding: [...]}) // Chapter/Heading + MAYBE summary or that stupid intro paragraph no one reads
          --[:HAS_SUBTHEME]→ (:Theme {name: "Planted Forests", embedding: [...]}) // Subheadings + embeddings of introductory/summarry paragraph
             --[:HAS_TEXT]→ (:BodyText {text: "...", order: 1, embedding: [...]})  // Paragraph + embedding for vector search
+
+2. Embed shit. Chose model and dims. What to include and so on
+
+3. Choose top-K search. Cosine prolly?
+
+4. Parse & Embed a good amount (maybe 2 chapters)
+
+5. Retrieve-loop and sampling. Try to collect metadata along the way like chapter, page num and so on.

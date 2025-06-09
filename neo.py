@@ -17,7 +17,9 @@ class QueryDB():
 
 
     def get_anything(self, tx): # tx is the transaction object w method run() for cypher scripts in neo4j
-        result = tx.run("MATCH (n) RETURN n")
+        result = tx.run(""""
+                        // Script for querying
+                        """)
         return [record.data() for record in result]
 
 

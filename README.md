@@ -58,10 +58,18 @@ Natural Forests
 
 // Here's some useful Cypher Scripts:
 
-// Master node:
-MERGE (t:Themes {name: "All Themes"})
+// Creating/Modifying master node:
+MERGE (t:Themes {name: "Themes"})
 SET t.themes = ["Fishing", "Forestry", "Planted Forests", "Natural Forests"];
 
-// Content nodes:
+// Creating/Modifying content nodes:
 MERGE (a:Themes {name: "Fishing"})
 SET a.content = <str>
+
+// Creating/Modifying relationships between nodes:
+
+// ── 3. Link the master node to all individual Theme nodes
+MATCH (root:Themes {name: "Themes"})
+MATCH (theme:<theme_name_in_themes>)
+WHERE theme.name IN root.themes
+MERGE (root)-[:HAS_THEME]->(theme);

@@ -27,6 +27,12 @@ class GenerateDB():
         self.URI = "bolt://localhost:7687"
         self.AUTH = ("neo4j", os.getenv("DB_PASSWORD"))
 
+    def create_master_node(self, tx):
+        script="""
+        MERGE (a:Themes {name: "Themes"})
+        """
+
+        tx.run(script)
 
     def create_chapters(self, tx, chapterName: str, chapterContent: str, embeddings: float, parent: str):
         ### Anchor node as themes
@@ -35,19 +41,19 @@ class GenerateDB():
 
         """
         ### Chapter nodes
-        for i in range(self.df.shape[0]-1):
-            if "Chapter" in str(self.df.iloc[i, 0]).lower():
-                script+=""" 
-                MERGE (b:Chapter {name: "$name"})
-                SET b.content = "$content"
-                SET b.content = $embeddings
-                MERGE (a)-[r:HAS_THEME]->(b)
-                
-                """
+        script+=""" 
+        MERGE (b:Chapter {name: "$name"})
+        SET b.content = "$content"
+        SET b.content = $embeddings
+        MERGE (a)-[r:HAS_THEME]->(b)
+        
+        """
         cypherScriptTemplate = Template(script)
 
 
         cypherScript = cypherScriptTemplate.safe_substitute(content=chapterContent,name=chapterName, parent=parent, embeddings=embeddings)
+
+        tx.run(cypherScript)
 
     def create_theme(self, tx, name: str, content: str, embeddings: float, parent: str):
         ### Theme nodes
@@ -68,6 +74,7 @@ class GenerateDB():
             driver.verify_connectivity()
             
             with driver.session() as session:
+                session.execute_write(self.create_master_node)
                 for index, row in self.df.iterrows():
                     session.execute_write(
                         self.create_chapters, chapterName=row.iloc[0], chapterContent=row.iloc[1], embeddings=0.1, parent="Themes")

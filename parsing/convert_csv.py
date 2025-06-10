@@ -1,6 +1,6 @@
 import csv
 import re
-from main import CoolParser
+from parser import CoolParser
 from io import StringIO
 
 def clean_line(line):
@@ -66,9 +66,9 @@ def markdown_to_csv(markdown_text, csv_path):
 
 if __name__ == "__main__":
     
-    file_path = "data/extracted_page1.pdf"  # Replace with the path to your PDF file
+    file_path = "../data/extracted_page1.pdf"  # Replace with the path to your PDF file
 
     parser = CoolParser()
     parsed_data = parser.parse_page(file_path)
 
-    markdown_to_csv(parsed_data.pages[0].md, 'data/test.csv')
+    markdown_to_csv(parsed_data.pages[0].md, '../data/test.csv')

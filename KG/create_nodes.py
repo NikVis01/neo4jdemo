@@ -15,10 +15,19 @@ df.columns = range(len(df.columns))
 
 print(df.head)
 
-def create_relationship(tx, name: str, content: str, parent: str):
+def create_chapter(tx, name: str, content: str, embeddings: float, parent: str):
     tx.run(
         """
+        // Anchor node Themes
         MERGE (a:Themes {name: $parent})
+
+        // Create chapter nodes
+        // goes here
+
+        // Create relationship between chapter & anchor
+        // goes here
+
+        // Themes stuff - pretty much good
         MERGE (b:Theme {name: $name})
         SET b.content = $content
         MERGE (a)-[r:%s]->(b)
@@ -28,6 +37,15 @@ def create_relationship(tx, name: str, content: str, parent: str):
         parent=parent
     )
 
+def create_theme(tx, name: str, content: str, embeddings: float, parent: str):
+    tx.run("""
+           
+           """ % 'HAS_SUBTHEME',
+           name=name,
+           content=content,
+           parent=parent)
+    
+    
 with GraphDatabase.driver(URI, auth=AUTH) as driver:
     driver.verify_connectivity()
     

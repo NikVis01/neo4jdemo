@@ -56,12 +56,30 @@ def markdown_to_csv(markdown_text: str,
             
             if chapter_count == 2:
                 start_of_book = True
+            else:
+                i += 1
+                continue
 
         # Check if this line is a figure or contains 'Fig.' or 'Figure'
         if re.search(r'\b(Fig(?:ure)?\.?\s*\d+)', line, re.IGNORECASE):
             i += 2
             continue
-        
+
+        # special case: chapter beginning
+        chapter_match = re.match(r'# Chapter', line)
+        if chapter_match:
+            current_heading = re.match(r'^# (.+)', line).group(1) + ':' + lines[i + 2][1:]
+            i += 3
+            current_content = []
+            continue
+        elif current_heading:
+            intro_match = re.match(r'# Introduction', line)
+            if intro_match:
+                current_content.append(intro_match.group()[2:] + ': ' + lines[i + 2])
+                i += 3
+                continue
+
+        # text body
         heading_match = re.match(r'^# (.+)', line)
         if heading_match:
             if current_heading is not None:

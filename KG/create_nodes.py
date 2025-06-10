@@ -9,7 +9,7 @@ load_dotenv()
 URI = "bolt://localhost:7687"
 AUTH = ("neo4j", os.getenv("DB_PASSWORD"))
 
-df = pd.read_csv("data/test.csv")
+df = pd.read_csv(".data/test.csv")
 df = pd.concat([df.columns.to_frame().T, df])
 df.columns = range(len(df.columns))
 

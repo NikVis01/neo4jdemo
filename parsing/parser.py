@@ -46,7 +46,7 @@ class CoolParser():
 if __name__ == "__main__":
         
     # Parse a single page
-    file_path = "../data/extracted_page1.pdf"  # Replace with the path to your PDF file
+    file_path = "./data/extracted_page1.pdf"  # Replace with the path to your PDF file
 
     parser = CoolParser()
     parsed_data = parser.parse_page(file_path)

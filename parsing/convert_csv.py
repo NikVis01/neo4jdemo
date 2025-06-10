@@ -66,7 +66,7 @@ def markdown_to_csv(markdown_text, csv_path):
 
 if __name__ == "__main__":
     
-    file_path = "../data/extracted_page1.pdf"  # Replace with the path to your PDF file
+    file_path = "./data/extracted_page1.pdf"  # Replace with the path to your PDF file
 
     parser = CoolParser()
     parsed_data = parser.parse_page(file_path)

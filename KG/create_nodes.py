@@ -9,13 +9,7 @@ load_dotenv()
 URI = "bolt://localhost:7687"
 AUTH = ("neo4j", os.getenv("DB_PASSWORD"))
 
-df = pd.read_csv(".data/test.csv")
-df = pd.concat([df.columns.to_frame().T, df])
-df.columns = range(len(df.columns))
-
-print(df.head)
-
-def create_chapter(tx, name: str, content: str, embeddings: float, parent: str):
+def create_chapter(tx, name: str, content: str, parent: str):
     tx.run(
         """
         // Anchor node Themes
@@ -37,7 +31,7 @@ def create_chapter(tx, name: str, content: str, embeddings: float, parent: str):
         parent=parent
     )
 
-def create_theme(tx, name: str, content: str, embeddings: float, parent: str):
+def create_theme(tx, name: str, content: str, parent: str):
     tx.run("""
            
            """ % 'HAS_SUBTHEME',
@@ -47,9 +41,14 @@ def create_theme(tx, name: str, content: str, embeddings: float, parent: str):
     
     
 with GraphDatabase.driver(URI, auth=AUTH) as driver:
+
+    df = pd.read_csv("./data/test.csv")
+    df = pd.concat([df.columns.to_frame().T, df])
+    df.columns = range(len(df.columns))
+    
     driver.verify_connectivity()
     
     with driver.session() as session:
         for index, row in df.iterrows():
-            session.execute_write(create_relationship, row.iloc[0], row.iloc[1], "Themes")
+            session.execute_write(create_chapter, row.iloc[0], row.iloc[1], "Themes")
 

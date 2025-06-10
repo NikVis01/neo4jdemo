@@ -12,21 +12,20 @@ USER = "neo4j"
 
 # print(type(driver))
 class QueryDB():
-    def __init__(self, theme: str):
+    def __init__(self):
         self.URI = "bolt://localhost:7687"
         self.USER = "neo4j"
         self.PASSWORD = os.getenv("DB_PASSWORD")
         self.driver = GraphDatabase.driver(self.URI, auth=(self.USER, self.PASSWORD))
-        self.theme = theme
 
-    def get_body_text(self, tx): # tx is the transaction object w method run() for cypher scripts in neo4j
+    def get_body_text(self, tx, theme: str): # tx is the transaction object w method run() for cypher scripts in neo4j
 
         cypherScriptTemplate = Template("""
                         MATCH (:Themes)-[:HAS_THEME]->(t:Chapter {name: "$theme"})
                         RETURN t.content
                         """)
 
-        cypherScript = cypherScriptTemplate.safe_substitute(theme=self.theme)
+        cypherScript = cypherScriptTemplate.safe_substitute(theme=theme)
         result = tx.run(cypherScript)
 
         return [record.data() for record in result][0]["t.content"] # Decoding output

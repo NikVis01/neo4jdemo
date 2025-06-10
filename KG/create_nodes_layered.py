@@ -34,26 +34,29 @@ class GenerateDB():
 
         tx.run(script)
 
-    def create_chapters(self, tx, chapterName: str, chapterContent: str, embeddings: float, parent: str):
+    def create_chapters(self, tx, embeddings: float):
         ### Anchor node as themes
         script="""
-        MERGE (a:Themes {name: $parent})
+        MERGE (a:Themes {name: "Theme"})
 
         """
         ### Chapter nodes
-        script+=""" 
-        MERGE (b:Chapter {name: "$name"})
-        SET b.content = "$content"
-        SET b.content = $embeddings
-        MERGE (a)-[r:HAS_THEME]->(b)
-        
-        """
-        cypherScriptTemplate = Template(script)
-
-
-        cypherScript = cypherScriptTemplate.safe_substitute(content=chapterContent,name=chapterName, parent=parent, embeddings=embeddings)
-
-        tx.run(cypherScript)
+        for i in range(self.df.shape[0]-1):
+            #print("hello")
+            print(self.df.iloc[i,0])
+            if "chapter" in str(self.df.iloc[i, 0]).lower():
+                #print("yes")
+                script+=""" 
+                MERGE (b:Chapter {name: "$name"})
+                SET b.content = "$content"
+                SET b.content = $embeddings
+                MERGE (a)-[r:HAS_THEME]->(b)
+                
+                """
+                name=self.df.iloc[i,0],
+                content=self.df.iloc[i,1],
+        print(script)
+        tx.run(script)
 
     def create_theme(self, tx, name: str, content: str, embeddings: float, parent: str):
         ### Theme nodes
@@ -75,10 +78,9 @@ class GenerateDB():
             
             with driver.session() as session:
                 session.execute_write(self.create_master_node)
-                for index, row in self.df.iterrows():
-                    session.execute_write(
-                        self.create_chapters, chapterName=row.iloc[0], chapterContent=row.iloc[1], embeddings=0.1, parent="Themes")
-                    #self.create_theme()
+            
+                session.execute_write(self.create_chapters, embeddings=0.1)
+                #self.create_theme()
 
 if __name__ == "__main__":
     GenerateDB().run_scripts()

@@ -3,6 +3,8 @@ import pandas as pd
 import os
 from dotenv import load_dotenv
 from string import Template
+import string
+
 
 load_dotenv()
 
@@ -40,21 +42,26 @@ class GenerateDB():
         MERGE (a:Themes {name: "Theme"})
 
         """
+        literals = [string.ascii_lowercase]
+        
         ### Chapter nodes
         for i in range(self.df.shape[0]-1):
             #print("hello")
             print(self.df.iloc[i,0])
+
             if "chapter" in str(self.df.iloc[i, 0]).lower():
                 #print("yes")
                 script+=""" 
-                MERGE (b:Chapter {name: "$name"})
-                SET b.content = "$content"
-                SET b.embedding = $embeddings
-                MERGE (a)-[r:HAS_THEME]->(b)
+                MERGE ($literal:Chapter {name: "$name"})
+                SET $literal.content = "$content"
+                SET $literal.embedding = $embeddings
+                MERGE (a)-[r:HAS_THEME]->($literal)
                 
                 """
                 name=self.df.iloc[i,0],
                 content=self.df.iloc[i,1],
+                literal=literals[i]
+        
         print(script)
         tx.run(script)
 

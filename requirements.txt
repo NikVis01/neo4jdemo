@@ -3,3 +3,4 @@ neo4j==5.28.1
 llama_cloud_services==0.6.20
 pyPDF2==3.0.1
 dotenv==0.9.9
+openai==1.85.0

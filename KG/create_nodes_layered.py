@@ -49,7 +49,7 @@ class GenerateDB():
                 script+=""" 
                 MERGE (b:Chapter {name: "$name"})
                 SET b.content = "$content"
-                SET b.content = $embeddings
+                SET b.embedding = $embeddings
                 MERGE (a)-[r:HAS_THEME]->(b)
                 
                 """

@@ -27,7 +27,7 @@ def get_page_from_pdf(input_pdf_path, page_number, output_pdf_path="output_page.
 if __name__ == "__main__":
     input_file = "GEOGRAPHY F2 TIE Wazaelimu.com .pdf"  # Replace with the path to your PDF file
     page_to_extract = 11 # Extract the third page (0-based indexing)
-    output_file = "data/extracted_page1.pdf"
+    output_file = "../data/extracted_page1.pdf"
 
     if get_page_from_pdf(input_file, page_to_extract, output_file):
         print(f"Page {page_to_extract + 1} extracted and saved to '{output_file}'")

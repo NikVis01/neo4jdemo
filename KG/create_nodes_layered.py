@@ -40,38 +40,39 @@ class GenerateDB():
 
     def create_chapters(self, tx, embeddings: float):
         ### Anchor node as themes
-        script="""
+        scriptMaster="""
         MERGE (a:Themes {name: "Theme"})
-
         """
+        tx.run(scriptMaster)
+
         literals = list(string.ascii_lowercase)
         # print(literals)
 
         ### Chapter nodes
+        script=""""""
         for i in range(self.df.shape[0]-1):
             #print("hello")
             #print(self.df.iloc[i,0])
 
             if "chapter" in str(self.df.iloc[i, 0]).lower():
-                print(self.df.iloc[i,0])
+                #print(self.df.iloc[i,0])
                 #print("yes")
-                script+=""" 
+                script="""
                 MERGE ($literal:Chapter {name: "$name"})
                 SET $literal.content = "$content"
                 SET $literal.embedding = $embeddings
                 MERGE (a)-[r:HAS_THEME]->($literal)
-                
                 """
-                name=self.df.iloc[i,0],
-                content=self.df.iloc[i,1],
+                name=self.df.iloc[i,0]
+                content=self.df.iloc[i,1]
                 literal=literals[i+1]
 
                 scriptTemp = Template(script)
                 realScript = scriptTemp.substitute(name=name,content=content,literal=literal,embeddings=0.1)
                 print(realScript)
         
-        # print(realScript)
-        tx.run(realScript)
+                # print(realScript)
+                tx.run(realScript)
 
     def create_theme(self, tx, name: str, content: str, embeddings: float, parent: str):
         ### Theme nodes

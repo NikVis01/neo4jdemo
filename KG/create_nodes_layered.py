@@ -24,7 +24,9 @@ class GenerateDB():
         df = pd.read_csv("./data/test.csv")
         df = pd.concat([df.columns.to_frame().T, df])
         df.columns = range(len(df.columns))
-
+        
+        # print(df.head())
+        
         self.df = df
         self.URI = "bolt://localhost:7687"
         self.AUTH = ("neo4j", os.getenv("DB_PASSWORD"))
@@ -42,14 +44,16 @@ class GenerateDB():
         MERGE (a:Themes {name: "Theme"})
 
         """
-        literals = [string.ascii_lowercase]
-        
+        literals = list(string.ascii_lowercase)
+        # print(literals)
+
         ### Chapter nodes
         for i in range(self.df.shape[0]-1):
             #print("hello")
-            print(self.df.iloc[i,0])
+            #print(self.df.iloc[i,0])
 
             if "chapter" in str(self.df.iloc[i, 0]).lower():
+                print(self.df.iloc[i,0])
                 #print("yes")
                 script+=""" 
                 MERGE ($literal:Chapter {name: "$name"})
@@ -60,10 +64,14 @@ class GenerateDB():
                 """
                 name=self.df.iloc[i,0],
                 content=self.df.iloc[i,1],
-                literal=literals[i]
+                literal=literals[i+1]
+
+                scriptTemp = Template(script)
+                realScript = scriptTemp.substitute(name=name,content=content,literal=literal,embeddings=0.1)
+                print(realScript)
         
-        print(script)
-        tx.run(script)
+        # print(realScript)
+        tx.run(realScript)
 
     def create_theme(self, tx, name: str, content: str, embeddings: float, parent: str):
         ### Theme nodes

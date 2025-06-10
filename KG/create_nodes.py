@@ -15,7 +15,7 @@ df.columns = range(len(df.columns))
 
 print(df.head)
 
-def create_relationship(tx, name, content, parent):
+def create_relationship(tx, name: str, content: str, parent: str):
     tx.run(
         """
         MERGE (a:Themes {name: $parent})

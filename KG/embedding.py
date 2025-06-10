@@ -4,7 +4,7 @@ import os
 
 import pandas as pd
 
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+# client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 class SickEmbedder():
     def __init__(self):
@@ -12,8 +12,9 @@ class SickEmbedder():
         # self.csv_path = None
         self.model="text-embedding-3-small"
         self.dims=300 # Should be fine for now (masters in ML told me so)
-        
-    def get_embedding_str(self, text):
+        self.client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
+    def get_embedding_str(self, text: str):
         self.text = text
 
         self.text = self.text.replace("\n", " ")
@@ -23,7 +24,7 @@ class SickEmbedder():
 
         # print(len(embeddings))
 
-        return client.embeddings.create(input = [self.text], model=self.model).data[0].embedding
+        return self.client.embeddings.create(input = [self.text], model=self.model).data[0].embedding
 
     def embedd_df(self, input_df):
         df = input_df
@@ -36,7 +37,7 @@ class SickEmbedder():
             df.iloc[i, 1] = self.get_embedding_str(df.iloc[i, 1])
 
         print(df)
-        
+
         return df
 
 # EXAMPLE USAGE W STRING:

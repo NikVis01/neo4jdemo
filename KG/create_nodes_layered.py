@@ -33,7 +33,7 @@ class GenerateDB():
 
     def create_master_node(self, tx):
         script="""
-        MERGE (a:Themes {name: "Themes"})
+        MERGE (a:Themes {name: "Theme"})
         """
 
         tx.run(script)
@@ -57,7 +57,7 @@ class GenerateDB():
             if "chapter" in str(self.df.iloc[i, 0]).lower():
                 #print(self.df.iloc[i,0])
                 #print("yes")
-                script="""
+                script=scriptMaster+"""
                 MERGE ($literal:Chapter {name: "$name"})
                 SET $literal.content = "$content"
                 SET $literal.embedding = $embeddings
@@ -93,7 +93,7 @@ class GenerateDB():
             driver.verify_connectivity()
             
             with driver.session() as session:
-                session.execute_write(self.create_master_node)
+                # session.execute_write(self.create_master_node)
             
                 session.execute_write(self.create_chapters, embeddings=0.1)
                 #self.create_theme()

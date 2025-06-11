@@ -16,34 +16,32 @@ query (input main.py) -> embedding (get_embedding_str in embedding.py)-> vector 
 ### main.py does not handle preprocessing and creation of graphDB, only processing of query, calling neo.py (vector search) and then feeding into LLM
 
 from infer import LLM
-# from KG.neo import QueryDB
+from KG.neo import QueryDB
 from KG.embedding import SickEmbedder
+
+from neo4j import GraphDatabase
 
 class Main():
     def __init__(self):
         self.query = ""
         self.embedder = SickEmbedder()
         self.llm = LLM()
-        # self.search = QueryDB
+        self.search = QueryDB()
 
-    def embeddQuery(self):
-        self.embedded_query = self.embedder.get_embedding_str(self.query)
 
-        return 0
 
     def vectorSearch(self):
-
-        # content = self.search.get_body_text(self.embedded_query)
-
-        ### TEMP:
-        content = ""
+        embedded_query = self.embedder.get_embedding_str(self.query)
+        #print(embedded_query)
+        content = self.search.session_execute(embedded_query=embedded_query)
+        # content = ""
+        # content = ""
 
         return content
     
     def feedLLM(self, query: str):
         self.query = query
 
-        self.embeddQuery()
         content = self.vectorSearch()
 
         prompt = f"{self.query}/n"
@@ -58,4 +56,3 @@ if __name__ == "__main__":
     user_query = input("query: ")
     obj = Main()
     obj.feedLLM(user_query)
-    

@@ -14,7 +14,7 @@ class LLM():
             The user might ask something like "what's the difference between planted and natural forests" and you will do your utmost to stick to the content you're given.
             Rephrase it to meet the user with efficient and polite manner.
 
-            Here's the user's query:
+            You'll get the user query along with relevant content from the textbook bellow:
             """
     
     def get_response(self, query: str):

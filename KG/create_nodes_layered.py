@@ -51,6 +51,7 @@ class GenerateDB():
         SET b.content = "$content"
         SET b.embedding = $embedding
         MERGE (a)-[r:HAS_CHAPTER]->(b)
+
         """
         name=df_row[0]
         content=df_row[1]
@@ -79,6 +80,7 @@ class GenerateDB():
         SET b.content = "$content"
         SET b.embedding = $embedding
         MERGE (a)-[r:HAS_THEME]->(b)
+
         """
         name=df_row[0]
         content=df_row[1]
@@ -87,7 +89,35 @@ class GenerateDB():
         realScript = scriptTemp.substitute(name=name,content=content,embedding=embedding)
 
         tx.run(realScript)
-        
+    
+    def create_chapterIndex(self, tx):
+        script="""
+        CREATE VECTOR INDEX chapterEmbeddingIndex IF NOT EXISTS
+        FOR (c:Chapter) ON (c.embedding)
+        OPTIONS {
+        indexConfig: {
+            `vector.dimensions`: 300,
+            `vector.similarity_function`: "cosine"
+            }
+        }
+
+        """
+        tx.run(script)
+
+    def create_paragraphIndex(self, tx):
+        script="""
+        CREATE VECTOR INDEX chapterEmbeddingIndex IF NOT EXISTS
+        FOR (c:Chapter) ON (c.embedding)
+        OPTIONS {
+        indexConfig: {
+            `vector.dimensions`: 300,
+            `vector.similarity_function`: "cosine"
+        }
+        }
+
+        """
+        tx.run(script)
+
     def run_scripts(self):
 
         with GraphDatabase.driver(self.URI, auth=self.AUTH) as driver:
@@ -96,7 +126,7 @@ class GenerateDB():
             with driver.session() as session:
 
                 scriptMaster = session.execute_write(self.create_master_node)
-
+                
                 for i in range(self.df.shape[0]-1):
                     
                     if "chapter" in str(self.df.iloc[i, 0]).lower():
@@ -109,7 +139,11 @@ class GenerateDB():
                                               df_row=self.df.iloc[i, :],
                                               embedding=self.embedding_df.iloc[i, 1],
                                               parent_script=chapter_script)
-
+                        
+                session.execute_write(self.create_chapterIndex)
+                session.execute_write(self.create_paragraphIndex)
+            
+            driver.close()  
 
 if __name__ == "__main__":
     GenerateDB().run_scripts()

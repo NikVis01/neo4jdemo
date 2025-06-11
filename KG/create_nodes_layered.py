@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 from string import Template
 import string
 import re
-
+from embedding import SickEmbedder
 
 load_dotenv()
 
@@ -25,10 +25,11 @@ class GenerateDB():
         df = pd.read_csv("./data/test.csv")
         df = pd.concat([df.columns.to_frame().T, df])
         df.columns = range(len(df.columns))
-        
-        # print(df.head())
+
+        embedder = SickEmbedder()
         
         self.df = df
+        self.embedding_df = embedder.embed_df(df.copy())
         self.URI = "bolt://localhost:7687"
         self.AUTH = ("neo4j", os.getenv("DB_PASSWORD"))
 
@@ -101,12 +102,12 @@ class GenerateDB():
                     if "chapter" in str(self.df.iloc[i, 0]).lower():
                         chapter_script = session.execute_write(self.create_chapters,
                                                                df_row=self.df.iloc[i, :], 
-                                                               embedding=0.1,
+                                                               embedding=self.embedding_df.iloc[i, 1],
                                                                parent_script=scriptMaster)
                     else:
                         session.execute_write(self.create_theme, 
                                               df_row=self.df.iloc[i, :],
-                                              embedding=0.1,
+                                              embedding=self.embedding_df.iloc[i, 1],
                                               parent_script=chapter_script)
 
 

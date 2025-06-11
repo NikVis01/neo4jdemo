@@ -1,7 +1,6 @@
 import openai
 from openai import OpenAI
 import os
-
 import pandas as pd
 
 # client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
@@ -26,17 +25,13 @@ class SickEmbedder():
 
         return self.client.embeddings.create(input = [self.text], model=self.model).data[0].embedding
 
-    def embedd_df(self, input_df):
+    def embed_df(self, input_df):
         df = input_df
 
         df.fillna('Empty space', inplace=True)
 
         for i in range(df.shape[0]-1):
-            print(str(df.iloc[i,1])+"\n")
-
             df.iloc[i, 1] = self.get_embedding_str(df.iloc[i, 1])
-
-        print(df)
 
         return df
 

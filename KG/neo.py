@@ -21,29 +21,41 @@ class QueryDB():
     def get_body_text(self, tx, embedded_query): # tx is the transaction object w method run() for cypher scripts in neo4j
 
         cypherScriptTemplate = Template("""
-                        // Step 1: Find the best matching Chapter using ANN
+                        // Step 1: Find the top-1 best matching Chapter
                         CALL db.index.vector.queryNodes('chapterEmbeddingIndex', 1, $queryEmbedding)
                         YIELD node AS chapter, score AS chapterScore
 
-                        // Step 2: Find Paragraphs within that Chapter
-                        MATCH (chapter)<-[:IN_CHAPTER]-(p:Paragraph)
+                        // Step 2: Match paragraphs (Theme nodes) within that Chapter
+                        MATCH (chapter)-[:HAS_THEME]->(p:Theme)
 
-                        // Step 3: Compute cosine similarity between each Paragraph and the query
-                        WITH p, chapterScore, similarity.cosine(p.embedding, $queryEmbedding) AS paraScore
+                        // Step 3: Score each paragraph for relevance
+                        WITH chapter, chapterScore, p,
+                            gds.similarity.cosine(p.embedding, $queryEmbedding) AS paraScore
                         WHERE paraScore IS NOT NULL
 
-                        // Step 4: Return top paragraphs with their scores
-                        RETURN p.content AS content, paraScore, chapterScore
+                        // Step 4: Pick only the most relevant paragraph
                         ORDER BY paraScore DESC
-                        LIMIT 5
+                        LIMIT 1
+
+                        // Step 5: Return both in a dictionary
+                        RETURN {
+                        chapterIntro: chapter.content,
+                        bestParagraph: p.content
+                        } AS result
 
                         """)
 
         cypherScript = cypherScriptTemplate.safe_substitute(queryEmbedding=embedded_query)
         result = tx.run(cypherScript)
-         
-        # return [record.data() for record in result][0]["t.content"] # Decoding output
-        return result
+        result_dict = result.data()[0]["result"]
+
+        #print(type(result_dict))
+        chap_cont = str(result_dict["chapterIntro"]) + str(result_dict["bestParagraph"])+"\n"
+        print(chap_cont)
+
+        #print(result_dict) 
+
+        return chap_cont
 
     def session_execute(self, embedded_query):
         with self.driver as driver:

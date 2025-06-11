@@ -106,13 +106,13 @@ class GenerateDB():
 
     def create_paragraphIndex(self, tx):
         script="""
-        CREATE VECTOR INDEX chapterEmbeddingIndex IF NOT EXISTS
-        FOR (c:Chapter) ON (c.embedding)
+        CREATE VECTOR INDEX paragraphEmbeddingIndex IF NOT EXISTS
+        FOR (c:Theme) ON (c.embedding)
         OPTIONS {
         indexConfig: {
             `vector.dimensions`: 300,
             `vector.similarity_function`: "cosine"
-        }
+            }
         }
 
         """

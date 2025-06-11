@@ -28,13 +28,11 @@ class Main():
         self.llm = LLM()
         self.search = QueryDB()
 
-
-
     def vectorSearch(self):
+        
         embedded_query = self.embedder.get_embedding_str(self.query)
-        #print(embedded_query)
+        print(embedded_query)
         content = self.search.session_execute(embedded_query=embedded_query)
-        # content = ""
         # content = ""
 
         return content
@@ -44,11 +42,14 @@ class Main():
 
         content = self.vectorSearch()
 
-        prompt = f"{self.query}/n"
-        prompt += f"{content}"
+        prompt = f"{self.query}\n"
+        prompt += f"{content}\n"
+
+        print(prompt)
+
         response = self.llm.get_response(prompt)
 
-        print(response)
+        print("LLM RESPONSE: \n" + response)
         
         return 0
     

@@ -10,8 +10,8 @@ class SickEmbedder():
         self.text="" # Just init empty var
         # self.csv_path = None
         self.model="text-embedding-3-small"
-        self.dims=300 # Should be fine for now (masters in ML told me so)
         self.client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+        self.dims = 300
 
     def get_embedding_str(self, text: str):
         self.text = text
@@ -23,7 +23,7 @@ class SickEmbedder():
 
         # print(len(embeddings))
 
-        return self.client.embeddings.create(input = [self.text], model=self.model).data[0].embedding
+        return self.client.embeddings.create(input = [self.text], model=self.model, dimensions=self.dims).data[0].embedding
 
     def embed_df(self, input_df):
         df = input_df

@@ -18,13 +18,14 @@ class LLM():
             """
     
     def get_response(self, query: str):
+        print(self.prompt + query)
 
         response = self.client.responses.create(
         model=self.model,
         input=self.prompt + query
         )
 
-        print(response.output_text)
+        return response.output_text
 
 ### Example query
 if __name__ == "__main__":

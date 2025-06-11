@@ -4,6 +4,7 @@ import os
 from dotenv import load_dotenv
 from string import Template
 import string
+import re
 
 
 load_dotenv()
@@ -33,59 +34,58 @@ class GenerateDB():
 
     def create_master_node(self, tx):
         script="""
-        MERGE (a:Themes {name: "Theme"})
+        MERGE (a:Book {name: "Book"})
         """
-
         tx.run(script)
+        return script
 
-    def create_chapters(self, tx, embeddings: float):
-        ### Anchor node as themes
-        scriptMaster="""
-        MERGE (a:Themes {name: "Theme"})
+    def create_chapters(self, 
+                        tx, 
+                        df_row: pd.DataFrame, 
+                        embedding: float, 
+                        parent_script: str):
+
+        script = parent_script + """
+        MERGE (b:Chapter {name: "$name"})
+        SET b.content = "$content"
+        SET b.embedding = $embedding
+        MERGE (a)-[r:HAS_CHAPTER]->(b)
         """
-        tx.run(scriptMaster)
+        name=df_row[0]
+        content=df_row[1]
 
-        literals = list(string.ascii_lowercase)
-        # print(literals)
+        scriptTemp = Template(script)
+        realScript = scriptTemp.substitute(name=name,content=content,embedding=embedding)
 
-        ### Chapter nodes
-        script=""""""
-        for i in range(self.df.shape[0]-1):
-            #print("hello")
-            #print(self.df.iloc[i,0])
+        tx.run(realScript)
 
-            if "chapter" in str(self.df.iloc[i, 0]).lower():
-                #print(self.df.iloc[i,0])
-                #print("yes")
-                script=scriptMaster+"""
-                MERGE ($literal:Chapter {name: "$name"})
-                SET $literal.content = "$content"
-                SET $literal.embedding = $embeddings
-                MERGE (a)-[r:HAS_THEME]->($literal)
-                """
-                name=self.df.iloc[i,0]
-                content=self.df.iloc[i,1]
-                literal=literals[i+1]
+        returned_script = """
+        MERGE (a:Chapter {name: "$name"})
+        """
+        scriptTemp = Template(returned_script)
+        returnScript = scriptTemp.substitute(name=name)
 
-                scriptTemp = Template(script)
-                realScript = scriptTemp.substitute(name=name,content=content,literal=literal,embeddings=0.1)
-                print(realScript)
-        
-                # need scriptMaster to run sequentially – otherwise empty reference node
-                tx.run(realScript)
+        return returnScript
 
-    def create_theme(self, tx, name: str, content: str, embeddings: float, parent: str):
-        ### Theme nodes
-        tx.run("""
-               
-            // Themes stuff - pretty much good
-            MERGE (b:Theme {name: $name})
-            SET b.content = $content
-            MERGE (a)-[r:%s]->(b)
-            """ % 'HAS_SUBTHEME',
-            name=name,
-            content=content,
-            parent=parent)
+    def create_theme(self, 
+                     tx,  
+                     df_row: pd.DataFrame,
+                     embedding: float, 
+                     parent_script: str):
+
+        script = parent_script + """
+        MERGE (b:Theme {name: "$name"})
+        SET b.content = "$content"
+        SET b.embedding = $embedding
+        MERGE (a)-[r:HAS_THEME]->(b)
+        """
+        name=df_row[0]
+        content=df_row[1]
+
+        scriptTemp = Template(script)
+        realScript = scriptTemp.substitute(name=name,content=content,embedding=embedding)
+
+        tx.run(realScript)
         
     def run_scripts(self):
 
@@ -93,10 +93,22 @@ class GenerateDB():
             driver.verify_connectivity()
             
             with driver.session() as session:
-                # session.execute_write(self.create_master_node)
-            
-                session.execute_write(self.create_chapters, embeddings=0.1)
-                #self.create_theme()
+
+                scriptMaster = session.execute_write(self.create_master_node)
+
+                for i in range(self.df.shape[0]-1):
+                    
+                    if "chapter" in str(self.df.iloc[i, 0]).lower():
+                        chapter_script = session.execute_write(self.create_chapters,
+                                                               df_row=self.df.iloc[i, :], 
+                                                               embedding=0.1,
+                                                               parent_script=scriptMaster)
+                    else:
+                        session.execute_write(self.create_theme, 
+                                              df_row=self.df.iloc[i, :],
+                                              embedding=0.1,
+                                              parent_script=chapter_script)
+
 
 if __name__ == "__main__":
     GenerateDB().run_scripts()

@@ -71,7 +71,7 @@ class GenerateDB():
                 realScript = scriptTemp.substitute(name=name,content=content,literal=literal,embeddings=0.1)
                 print(realScript)
         
-                # print(realScript)
+                # need scriptMaster to run sequentially – otherwise empty reference node
                 tx.run(realScript)
 
     def create_theme(self, tx, name: str, content: str, embeddings: float, parent: str):

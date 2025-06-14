@@ -22,14 +22,15 @@ df.columns = range(len(df.columns))
 
 class GenerateDB():
     def __init__(self):
-        df = pd.read_csv("./data/test.csv")
+        df = pd.read_csv("../data/test.csv")
         df = pd.concat([df.columns.to_frame().T, df])
         df.columns = range(len(df.columns))
 
-        embedder = SickEmbedder()
+        embedder = SickEmbedder(dims=300)
         
         self.df = df
         self.embedding_df = embedder.embed_df(df.copy())
+        self.header_df = embedder.embed_header(df.copy())
         self.URI = "bolt://localhost:7687"
         self.AUTH = ("neo4j", os.getenv("DB_PASSWORD"))
 
@@ -44,12 +45,14 @@ class GenerateDB():
                         tx, 
                         df_row: pd.DataFrame, 
                         embedding: float, 
+                        keyword: float,
                         parent_script: str):
 
         script = parent_script + """
         MERGE (b:Chapter {name: "$name"})
         SET b.content = "$content"
         SET b.embedding = $embedding
+        SET b.keyword = $keyword
         MERGE (a)-[r:HAS_CHAPTER]->(b)
 
         """
@@ -57,7 +60,7 @@ class GenerateDB():
         content=df_row[1]
 
         scriptTemp = Template(script)
-        realScript = scriptTemp.substitute(name=name,content=content,embedding=embedding)
+        realScript = scriptTemp.substitute(name=name,content=content,embedding=embedding, keyword=keyword)
 
         tx.run(realScript)
 
@@ -73,12 +76,14 @@ class GenerateDB():
                      tx,  
                      df_row: pd.DataFrame,
                      embedding: float, 
+                     keyword: float,
                      parent_script: str):
 
         script = parent_script + """
         MERGE (b:Theme {name: "$name"})
         SET b.content = "$content"
         SET b.embedding = $embedding
+        SET b.keyword = $keyword
         MERGE (a)-[r:HAS_THEME]->(b)
 
         """
@@ -86,7 +91,7 @@ class GenerateDB():
         content=df_row[1]
 
         scriptTemp = Template(script)
-        realScript = scriptTemp.substitute(name=name,content=content,embedding=embedding)
+        realScript = scriptTemp.substitute(name=name,content=content,embedding=embedding, keyword=keyword)
 
         tx.run(realScript)
     
@@ -118,6 +123,34 @@ class GenerateDB():
         """
         tx.run(script)
 
+    def create_keywordIndex(self, tx):
+        script="""
+        CREATE VECTOR INDEX chapterKeyIndex IF NOT EXISTS
+        FOR (c:Chapter) ON (c.keyword)
+        OPTIONS {
+        indexConfig: {
+            `vector.dimensions`: 300,
+            `vector.similarity_function`: "cosine"
+            }
+        }
+
+        """
+        tx.run(script)
+
+    def create_keywordIndex(self, tx):
+        script="""
+        CREATE VECTOR INDEX paragraphKeyIndex IF NOT EXISTS
+        FOR (c:Theme) ON (c.keyword)
+        OPTIONS {
+        indexConfig: {
+            `vector.dimensions`: 300,
+            `vector.similarity_function`: "cosine"
+            }
+        }
+
+        """
+        tx.run(script)
+
     def run_scripts(self):
 
         with GraphDatabase.driver(self.URI, auth=self.AUTH) as driver:
@@ -133,11 +166,13 @@ class GenerateDB():
                         chapter_script = session.execute_write(self.create_chapters,
                                                                df_row=self.df.iloc[i, :], 
                                                                embedding=self.embedding_df.iloc[i, 1],
+                                                               keyword=self.header_df.iloc[i, 1],
                                                                parent_script=scriptMaster)
                     else:
                         session.execute_write(self.create_theme, 
                                               df_row=self.df.iloc[i, :],
                                               embedding=self.embedding_df.iloc[i, 1],
+                                              keyword=self.header_df.iloc[i, 1],
                                               parent_script=chapter_script)
                         
                 session.execute_write(self.create_chapterIndex)

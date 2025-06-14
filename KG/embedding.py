@@ -6,12 +6,12 @@ import pandas as pd
 # client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 class SickEmbedder():
-    def __init__(self):
+    def __init__(self, dims):
         self.text="" # Just init empty var
         # self.csv_path = None
         self.model="text-embedding-3-small"
         self.client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-        self.dims = 300
+        self.dims = dims
 
     def get_embedding_str(self, text: str):
         self.text = text
@@ -32,6 +32,18 @@ class SickEmbedder():
 
         for i in range(df.shape[0]-1):
             df.iloc[i, 1] = self.get_embedding_str(df.iloc[i, 1])
+
+        return df
+    
+    def embed_header(self, input_df):
+
+        df = input_df
+
+        for i in range(df.shape[0]-1):
+            if not "chapter" in str(df.iloc[i, 0]).lower():
+                df.iloc[i, 1] = self.get_embedding_str(df.iloc[i, 0])
+            else:
+                df.iloc[i, 1] = self.get_embedding_str(df.iloc[i, 0].split(":",1)[1])
 
         return df
 

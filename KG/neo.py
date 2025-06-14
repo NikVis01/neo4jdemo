@@ -50,8 +50,8 @@ class QueryDB():
         result_dict = result.data()[0]["result"]
 
         #print(type(result_dict))
-        chap_cont = str(result_dict["chapterIntro"]) + str(result_dict["bestParagraph"])+"\n"
-        print(chap_cont)
+        chap_cont = str("Chapter intro: \n" + result_dict["chapterIntro"]) + "\n\n" + "Paragraph content: \n" + str(result_dict["bestParagraph"])+"\n"
+        # print(chap_cont)
 
         #print(result_dict) 
 

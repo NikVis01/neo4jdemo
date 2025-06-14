@@ -31,7 +31,7 @@ class Main():
     def vectorSearch(self):
         
         embedded_query = self.embedder.get_embedding_str(self.query)
-        print(embedded_query)
+        # print(embedded_query)
         content = self.search.session_execute(embedded_query=embedded_query)
         # content = ""
 
@@ -40,16 +40,26 @@ class Main():
     def feedLLM(self, query: str):
         self.query = query
 
+        enhanced_query = self.llm.get_response(f"{self.query}\n" + 
+                                               "Use this user query and give a very short info text" +
+                                               " yourself. The text should emulate how a textbook " +
+                                               "would answer the question or provide info within" +
+                                               " a paragraph. Give two or three sentences.")
+        
+        print(enhanced_query)
+        
+        self.query = enhanced_query
+
         content = self.vectorSearch()
 
         prompt = f"{self.query}\n"
         prompt += f"{content}\n"
 
-        print(prompt)
+        # print(prompt)
 
         response = self.llm.get_response(prompt)
 
-        print("LLM RESPONSE: \n" + response)
+        # print("LLM RESPONSE: \n" + response)
         
         return 0
     

@@ -47,15 +47,18 @@ class Main():
         # content = "
     
     def feedLLM(self, query: str):
-        self.query = query
+        original_query = query
 
+        self.query = query
+        
         enhanced_query = self.llm.get_response(f"{self.query}\n" + 
                                                "Use this user query and give a very short info text" +
                                                " yourself. The text should emulate how a textbook " +
                                                "would answer the question or provide info within" +
                                                " a paragraph. Give two or three sentences.")
         
-        print(enhanced_query)
+        
+        print("Enhanced Query:" + enhanced_query)
         
         self.query = enhanced_query
 

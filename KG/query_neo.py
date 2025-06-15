@@ -33,14 +33,16 @@ class QueryNeo():
                             gds.similarity.cosine(p.embedding, $queryEmbedding) AS paraScore
                         WHERE paraScore IS NOT NULL
 
-                        // Step 4: Pick only the most relevant paragraph
+                        // Step 4: Pick top 3 most relevant paragraphs
                         ORDER BY paraScore DESC
-                        LIMIT 1
+                        LIMIT 3
 
-                        // Step 5: Return both in a dictionary
+                        // Step 5: Collect paragraphs, return both
+                        WITH chapter.content AS chapterIntro, collect(p.content) AS topParagraphs
+
                         RETURN {
-                        chapterIntro: chapter.content,
-                        bestParagraph: p.content
+                        chapterIntro: chapterIntro,
+                        topParagraphs: topParagraphs
                         } AS result
 
                         """)
@@ -49,11 +51,13 @@ class QueryNeo():
         result = tx.run(cypherScript)
         result_dict = result.data()[0]["result"]
 
-        #print(type(result_dict))
-        chap_cont = str("Chapter intro: \n" + result_dict["chapterIntro"]) + "\n\n" + "Paragraph content: \n" + str(result_dict["bestParagraph"])+"\n"
-        # print(chap_cont)
+        # chap_cont = str("Chapter intro: \n" + result_dict["chapterIntro"]) + "\n\n" + "Paragraph content: \n" + str(result_dict["bestParagraph"])+"\n"
+        
+        top_paragraphs = "\n\n".join(result_dict["topParagraphs"])
+        print(top_paragraphs)
 
-        #print(result_dict) 
+        chap_cont = str("Chapter intro: \n" + result_dict["chapterIntro"]) + "\n\n" + "Paragraph content: \n" + str(top_paragraphs)+"\n"
+        # print(chap_cont)
 
         return chap_cont
     
@@ -72,14 +76,16 @@ class QueryNeo():
                             gds.similarity.cosine(p.keyword, $embeddedKey) AS paraScore
                         WHERE paraScore IS NOT NULL
 
-                        // Step 4: Pick only the most relevant paragraph
+                        // Step 4: Pick top 3 most relevant paragraphs
                         ORDER BY paraScore DESC
-                        LIMIT 1
+                        LIMIT 3
 
-                        // Step 5: Return both in a dictionary
+                        // Step 5: Collect paragraphs, return both
+                        WITH chapter.content AS chapterIntro, collect(p.content) AS topParagraphs
+
                         RETURN {
-                        chapterIntro: chapter.content,
-                        bestParagraph: p.content
+                        chapterIntro: chapterIntro,
+                        topParagraphs: topParagraphs
                         } AS result
 
                         """)
@@ -88,8 +94,10 @@ class QueryNeo():
         result = tx.run(cypherScript)
         result_dict = result.data()[0]["result"]
 
+        top_paragraphs = "\n\n".join(result_dict["topParagraphs"])
+        print(top_paragraphs)
         #print(type(result_dict))
-        chap_cont = str("Chapter intro: \n" + result_dict["chapterIntro"]) + "\n\n" + "Paragraph content: \n" + str(result_dict["bestParagraph"])+"\n"
+        chap_cont = str("Chapter intro: \n" + result_dict["chapterIntro"]) + "\n\n" + "Paragraph content: \n" + str(top_paragraphs)+"\n"
         # print(chap_cont)
 
         #print(result_dict) 

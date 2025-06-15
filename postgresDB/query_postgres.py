@@ -21,15 +21,16 @@ class QueryPostgres():
         self.cur = self.conn.cursor()
 
     def searchDB(self, query: list[float]):
+        vector_str = f"'[{', '.join(map(str, query))}]'"
+
         search_script = Template("""
-        
         SELECT id, title, content
         FROM documents
-        ORDER BY embedding <#> $query  -- query vector goes here dawg
+        ORDER BY embedding <#> $query -- query vector goes here dawg
         LIMIT 3;
         """) ### Top-K = 3, one of the strenghts of a simpler postgresDB as opposed to graphDB
 
-        self.cur.execute(search_script.substitute(query=self.query))
+        self.cur.execute(search_script.substitute(query=vector_str))
         print(self.cur.fetchall())
 
         return self.cur.fetchall() ### Should return top 3 k's. 

@@ -32,6 +32,5 @@ class QueryPostgres():
 
         self.cur.execute(search_script.substitute(query=vector_str))
         print(self.cur.fetchall())
-
+        
         return self.cur.fetchall() ### Should return top 3 k's. 
-    

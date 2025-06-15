@@ -81,7 +81,7 @@ class GeneratePostgres():
 
         self.cur = self.conn.cursor()
 
-    def create_and_insert(self):
+    def create_and_insert(self) -> None:
         # Create table
         create_script = Template("""
         CREATE TABLE IF NOT EXISTS documents (
@@ -109,7 +109,7 @@ class GeneratePostgres():
 
         self.conn.commit()
 
-    def close(self):
+    def close(self) -> None:
         self.cur.close()
         self.conn.close()
 

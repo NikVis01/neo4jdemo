@@ -18,7 +18,7 @@ class QueryNeo():
         self.PASSWORD = os.getenv("DB_PASSWORD")
         self.driver = GraphDatabase.driver(self.URI, auth=(self.USER, self.PASSWORD))
 
-    def get_body_text(self, tx, embedded_query): # tx is the transaction object w method run() for cypher scripts in neo4j
+    def get_body_text(self, tx, embedded_query: list[float]) -> str: # tx is the transaction object w method run() for cypher scripts in neo4j
 
         cypherScriptTemplate = Template("""
                         // Step 1: Find the top-1 best matching Chapter
@@ -61,7 +61,7 @@ class QueryNeo():
 
         return chap_cont
     
-    def get_text_using_key(self, tx, embedded_keyword): # tx is the transaction object w method run() for cypher scripts in neo4j
+    def get_text_using_key(self, tx, embedded_keyword: list[float]) -> str: # tx is the transaction object w method run() for cypher scripts in neo4j
 
         cypherScriptTemplate = Template("""
                         // Step 1: Find the top-1 best matching Chapter
@@ -104,7 +104,7 @@ class QueryNeo():
 
         return chap_cont
 
-    def session_execute(self, embedded_query):
+    def session_execute(self, embedded_query: list[float]) -> str:
         with self.driver as driver:
             driver.verify_connectivity()
             

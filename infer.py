@@ -17,7 +17,7 @@ class LLM():
             You'll get the user query along with relevant content from the textbook bellow:
             """
     
-    def get_response(self, query: str):
+    def get_response(self, query: str) -> str:
         print(self.prompt + query)
 
         response = self.client.responses.create(

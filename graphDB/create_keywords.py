@@ -25,7 +25,7 @@ class keyword_LLM():
         The input text is:
         """
 
-    def get_keyword(self, user_text: str):
+    def get_keyword(self, user_text: str): # Tf does this return, str? 
 
         response = self.client.responses.create(
         model=self.model,

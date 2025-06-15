@@ -16,7 +16,7 @@ class SickEmbedder():
         self.client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
         self.dims = dims
 
-    def get_embedding_str(self, text: str):
+    def get_embedding_str(self, text: str) -> list[float]:
         self.text = text
 
         self.text = self.text.replace("\n", " ")
@@ -28,7 +28,7 @@ class SickEmbedder():
 
         return self.client.embeddings.create(input = [self.text], model=self.model, dimensions=self.dims).data[0].embedding
 
-    def embed_df(self, input_df):
+    def embed_df(self, input_df) -> pd.DataFrame:
         df = input_df
 
         df.fillna('Empty space', inplace=True)
@@ -38,7 +38,7 @@ class SickEmbedder():
 
         return df
     
-    def embed_header(self, input_df):
+    def embed_header(self, input_df) -> pd.DataFrame:
 
         df = input_df
 

@@ -35,7 +35,7 @@ class Main():
         self.neo_search = QueryNeo()
         self.post_search = QueryPostgres()
 
-    def neoVectorSearch(self):
+    def neoVectorSearch(self) -> str:
         
         embedded_query = self.embedder.get_embedding_str(self.query)
         # print(embedded_query)
@@ -52,7 +52,7 @@ class Main():
 
         return content
     
-    def feedLLM(self, db_select: str, query: str):
+    def feedLLM(self, db_select: str, query: str) -> None:
         self.db_select = db_select
 
         # We should try putting this into the LLM to minimize hallucinations:
@@ -88,9 +88,8 @@ class Main():
 
         print("LLM RESPONSE: \n" + response)
 
-        return 0
     
-    def calcCosine(self, str1: str, str2: str):
+    def calcCosine(self, str1: str, str2: str) -> int:
         ### Calc cosine similarity between Natural and Planted Forests
         vec1 = np.array(self.embedder.get_embedding_str(str1))
         vec2 = np.array(self.embedder.get_embedding_str(str2))

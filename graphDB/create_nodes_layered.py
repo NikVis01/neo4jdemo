@@ -34,7 +34,7 @@ class GenerateNeo():
         self.URI = "bolt://localhost:7687"
         self.AUTH = ("neo4j", os.getenv("DB_PASSWORD"))
 
-    def create_master_node(self, tx):
+    def create_master_node(self, tx) -> None:
         script="""
         MERGE (a:Book {name: "Book"})
         """
@@ -46,7 +46,7 @@ class GenerateNeo():
                         df_row: pd.DataFrame, 
                         embedding: float, 
                         keyword: float,
-                        parent_script: str):
+                        parent_script: str) -> None:
 
         script = parent_script + """
         MERGE (b:Chapter {name: "$name"})
@@ -77,7 +77,7 @@ class GenerateNeo():
                      df_row: pd.DataFrame,
                      embedding: float, 
                      keyword: float,
-                     parent_script: str):
+                     parent_script: str) -> None:
 
         script = parent_script + """
         MERGE (b:Theme {name: "$name"})
@@ -95,7 +95,7 @@ class GenerateNeo():
 
         tx.run(realScript)
     
-    def create_chapterIndex(self, tx):
+    def create_chapterIndex(self, tx) -> None:
         script="""
         CREATE VECTOR INDEX chapterEmbeddingIndex IF NOT EXISTS
         FOR (c:Chapter) ON (c.embedding)
@@ -109,7 +109,7 @@ class GenerateNeo():
         """
         tx.run(script)
 
-    def create_paragraphIndex(self, tx):
+    def create_paragraphIndex(self, tx) -> None:
         script="""
         CREATE VECTOR INDEX paragraphEmbeddingIndex IF NOT EXISTS
         FOR (c:Theme) ON (c.embedding)
@@ -123,7 +123,7 @@ class GenerateNeo():
         """
         tx.run(script)
 
-    def create_keywordIndex(self, tx):
+    def create_keywordIndex(self, tx) -> None:
         script="""
         CREATE VECTOR INDEX chapterKeyIndex IF NOT EXISTS
         FOR (c:Chapter) ON (c.keyword)
@@ -137,7 +137,7 @@ class GenerateNeo():
         """
         tx.run(script)
 
-    def create_keywordIndex(self, tx):
+    def create_keywordIndex(self, tx) -> None:
         script="""
         CREATE VECTOR INDEX paragraphKeyIndex IF NOT EXISTS
         FOR (c:Theme) ON (c.keyword)
@@ -151,7 +151,7 @@ class GenerateNeo():
         """
         tx.run(script)
 
-    def run_scripts(self):
+    def run_scripts(self) -> None:
 
         with GraphDatabase.driver(self.URI, auth=self.AUTH) as driver:
             driver.verify_connectivity()

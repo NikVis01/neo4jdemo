@@ -23,6 +23,7 @@ from graphDB.embedding import SickEmbedder
 from graphDB.query_neo import QueryNeo
 from postgresDB.query_postgres import QueryPostgres
 
+import numpy as np
 
 class Main():
     def __init__(self):
@@ -89,8 +90,27 @@ class Main():
 
         return 0
     
+    def calcCosine(self, str1: str, str2: str):
+        ### Calc cosine similarity between Natural and Planted Forests
+        vec1 = np.array(self.embedder.get_embedding_str(str1))
+        vec2 = np.array(self.embedder.get_embedding_str(str2))
+
+        dot_product = np.dot(vec1, vec2)
+        norm1 = np.linalg.norm(vec1)
+        norm2 = np.linalg.norm(vec2)
+
+        return dot_product / (norm1 * norm2)
+    
 if __name__ == "__main__":
+    obj = Main()
+
+    similarity = obj.calcCosine(str1="",
+                   str2="")
+    # print(similarity)
+
     db_select = input("Which DB would you like to use? 0 for neo4j, 1 for Postgres: ")
     user_query = input("Query: ")
-    obj = Main()
+    
     obj.feedLLM(db_select=db_select,query=user_query)
+
+

@@ -34,5 +34,4 @@ class QueryPostgres():
         print(self.cur.fetchall())
 
         return self.cur.fetchall() ### Should return top 3 k's. 
-
-
+    

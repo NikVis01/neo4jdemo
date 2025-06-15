@@ -18,9 +18,9 @@ query (input main.py) -> embedding (get_embedding_str in embedding.py)-> vector 
 from infer import LLM
 from neo4j import GraphDatabase
 
-from KG.embedding import SickEmbedder
+from graphDB.embedding import SickEmbedder
 
-from KG.query_neo import QueryNeo
+from graphDB.query_neo import QueryNeo
 from postgresDB.query_postgres import QueryPostgres
 
 

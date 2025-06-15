@@ -55,7 +55,7 @@ from pathlib import Path
 # Omg importing from another dir is hell tf
 sys.path.append(str(Path(__file__).resolve().parents[1]))
 
-from KG.embedding import SickEmbedder
+from graphDB.embedding import SickEmbedder
 
 class GeneratePostgres():
     def __init__(self):

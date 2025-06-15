@@ -20,7 +20,7 @@ df = pd.concat([df.columns.to_frame().T, df])
 df.columns = range(len(df.columns))
 """
 
-class GenerateDB():
+class GenerateNeo():
     def __init__(self):
         df = pd.read_csv("../data/test.csv")
         df = pd.concat([df.columns.to_frame().T, df])
@@ -181,4 +181,4 @@ class GenerateDB():
             driver.close()  
 
 if __name__ == "__main__":
-    GenerateDB().run_scripts()
+    GenerateNeo().run_scripts()

@@ -11,7 +11,7 @@ USER = "neo4j"
 """
 
 # print(type(driver))
-class QueryDB():
+class QueryNeo():
     def __init__(self):
         self.URI = "bolt://localhost:7687"
         self.USER = "neo4j"

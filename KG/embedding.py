@@ -56,5 +56,5 @@ if __name__ == "__main__":
 
 # EXAMPLE USAGE W CSV
 if __name__ == "__main__":
-    obj = SickEmbedder()
+    obj = SickEmbedder(dims=300)
     # obj.embedd_df()

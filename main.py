@@ -16,19 +16,22 @@ query (input main.py) -> embedding (get_embedding_str in embedding.py)-> vector 
 ### main.py does not handle preprocessing and creation of graphDB, only processing of query, calling neo.py (vector search) and then feeding into LLM
 
 from infer import LLM
-from KG.neo import QueryDB
+from neo4j import GraphDatabase
+
 from KG.embedding import SickEmbedder
 
-from neo4j import GraphDatabase
+from KG.query_neo import QueryNeo
+from postgresDB.query_postgres import QueryPostgres
+
 
 class Main():
     def __init__(self):
         self.query = ""
-        self.embedder = SickEmbedder()
+        self.embedder = SickEmbedder(dims=300)
         self.llm = LLM()
-        self.search = QueryDB()
+        self.search = QueryNeo()
 
-    def vectorSearch(self):
+    def neoVectorSearch(self):
         
         embedded_query = self.embedder.get_embedding_str(self.query)
         # print(embedded_query)
@@ -36,6 +39,12 @@ class Main():
         # content = ""
 
         return content
+    
+    def postgresVectorSearch(self):
+        embedded_query = self.embedder.get_embedding_str(self.query)
+        # print(embedded_query)
+        content = self.search.session_execute(embedded_query=embedded_query)
+        # content = "
     
     def feedLLM(self, query: str):
         self.query = query
@@ -50,7 +59,7 @@ class Main():
         
         self.query = enhanced_query
 
-        content = self.vectorSearch()
+        content = self.neoVectorSearch()
 
         prompt = f"{self.query}\n"
         prompt += f"{content}\n"
@@ -59,7 +68,7 @@ class Main():
 
         response = self.llm.get_response(prompt)
 
-        # print("LLM RESPONSE: \n" + response)
+        print("LLM RESPONSE: \n" + response)
         
         return 0
     

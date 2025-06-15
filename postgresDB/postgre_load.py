@@ -57,7 +57,7 @@ sys.path.append(str(Path(__file__).resolve().parents[1]))
 
 from KG.embedding import SickEmbedder
 
-class Generate_POSTGRE():
+class GeneratePostgres():
     def __init__(self):
         df = pd.read_csv("./data/test.csv")
         df = pd.concat([df.columns.to_frame().T, df])
@@ -112,7 +112,7 @@ class Generate_POSTGRE():
         self.conn.close()
 
 if __name__ == "__main__":
-    pg = Generate_POSTGRE()
+    pg = GeneratePostgres()
     pg.create_and_insert()
     pg.close()
 

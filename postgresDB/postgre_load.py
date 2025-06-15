@@ -52,6 +52,8 @@ import psycopg2
 import sys
 from pathlib import Path
 
+load_dotenv()
+
 # Omg importing from another dir is hell tf
 sys.path.append(str(Path(__file__).resolve().parents[1]))
 

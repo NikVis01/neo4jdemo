@@ -22,7 +22,7 @@ df.columns = range(len(df.columns))
 
 class GenerateNeo():
     def __init__(self):
-        df = pd.read_csv("../data/test.csv")
+        df = pd.read_csv("./data/test.csv")
         df = pd.concat([df.columns.to_frame().T, df])
         df.columns = range(len(df.columns))
 

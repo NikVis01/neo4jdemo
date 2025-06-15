@@ -33,7 +33,7 @@ class SickEmbedder():
 
         df.fillna('Empty space', inplace=True)
 
-        for i in range(df.shape[0]-1):
+        for i in range(df.shape[0]):
             df.iloc[i, 1] = self.get_embedding_str(df.iloc[i, 1])
 
         return df
@@ -42,7 +42,7 @@ class SickEmbedder():
 
         df = input_df
 
-        for i in range(df.shape[0]-1):
+        for i in range(df.shape[0]):
             if not "chapter" in str(df.iloc[i, 0]).lower():
                 df.iloc[i, 1] = self.get_embedding_str(df.iloc[i, 0])
             else:

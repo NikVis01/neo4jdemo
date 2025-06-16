@@ -20,7 +20,7 @@ from neo4j import GraphDatabase
 
 from graphDB.embedding import SickEmbedder
 
-from graphDB.query_neo import QueryNeo
+from graphDB.query_neo_new import QueryNeo
 from postgresDB.query_postgres import QueryPostgres
 
 import numpy as np
@@ -102,9 +102,10 @@ class Main():
     
 if __name__ == "__main__":
     obj = Main()
-
+    """
     similarity = obj.calcCosine(str1="",
                    str2="")
+                   """
     # print(similarity)
 
     db_select = input("Which DB would you like to use? 0 for neo4j, 1 for Postgres: ")

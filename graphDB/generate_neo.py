@@ -180,10 +180,12 @@ class GenerateNeo():
             data[comm]["paragraphs"].append(para)
         return data
 
+
     def summarize_with_openai(self, texts):
         response = self.llm.summarize_with_openai(texts)
 
         return response.choices[0].message.content.strip()
+
 
     def write_summary_node(self, tx, comm_id, avg_vec, summary_text):
         title = f"Community_{comm_id}_Summary"
@@ -195,14 +197,6 @@ class GenerateNeo():
         """
         tx.run(query, comm_id=comm_id, avg_vec=avg_vec, summary_text=summary_text, title=title)
 
-    def connect_summary(self, tx):
-        tx.run("""
-        MATCH (n:Concept)
-        WHERE n.communityId IS NOT NULL
-        MATCH (s:Summary {communityId: n.communityId}) 
-        MERGE (n)-[:BELONGS_TO]->(s)
-        MERGE (s)-[:HAS_CONTENT]->(n)
-        """)
 
     def create_summary_index(self, tx):
         tx.run("""
@@ -213,6 +207,24 @@ class GenerateNeo():
         `vector.similarity_function`: "cosine"
         }}
         """)
+
+
+    def link_summary_to_concepts(self, tx, summary_id, summary_embedding, community_id, TOP_K, SIMILARITY_THRESHOLD):
+        tx.run("""
+        CALL db.index.vector.queryNodes('concept_embedding_index', $k, $embedding)
+        YIELD node, score
+        WHERE node.communityId = $community_id AND score >= $threshold
+        WITH node, score
+        MATCH (s:Summary) WHERE id(s) = $summary_id
+        MERGE (s)-[:REPRESENTS {similarity: score}]->(node)
+        """, {
+            'k': TOP_K,  # buffer in case some get filtered out
+            'embedding': summary_embedding,
+            'threshold': SIMILARITY_THRESHOLD,
+            'summary_id': summary_id,
+            'community_id': community_id
+        })
+
 
     ### ---- RUNNING SCRIPTS SEQUENTIALLY ---- ###
     def run_scripts(self) -> None:
@@ -306,11 +318,20 @@ class GenerateNeo():
 
                     session.execute_write(self.write_summary_node, comm_id, mean_vec, summary)
 
-                    session.execute_write(self.connect_summary)
-
                     session.execute_write(self.create_summary_index)
 
                     print("LOG: Thank fuck this worked, summary nodes generated.")
+
+            with driver.session() as session:
+                summaries = session.run("""
+                MATCH (s:Summary)
+                RETURN id(s) as id, s.embedding as embedding, s.communityId as community_id
+                """)
+                for record in summaries:
+                    summary_id = record["id"]
+                    summary_embedding = record["embedding"]
+                    community_id = record["community_id"]
+                    session.execute_write(self.link_summary_to_concepts, summary_id, summary_embedding, community_id, 3, 0.7)
 
             print("LOG: SUCCESS! Graph has been initialized. Closing driver...")
 

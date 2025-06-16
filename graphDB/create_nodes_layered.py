@@ -9,6 +9,8 @@ from embedding import SickEmbedder
 
 load_dotenv()
 
+### OBS: THIS IS OLD
+
 # URI examples: "neo4j://localhost", "neo4j+s://xxx.databases.neo4j.io"
 
 """
@@ -34,11 +36,12 @@ class GenerateNeo():
         self.URI = "bolt://localhost:7687"
         self.AUTH = ("neo4j", os.getenv("DB_PASSWORD"))
 
-    def create_master_node(self, tx) -> None:
+    def create_master_node(self, tx):
         script="""
         MERGE (a:Book {name: "Book"})
         """
         tx.run(script)
+
         return script
 
     def create_chapters(self, 

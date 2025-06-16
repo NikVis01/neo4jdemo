@@ -28,17 +28,18 @@ class LLM():
 
         return response.output_text
     
-    def summarize_community(self, community_df: pd.DataFrame) -> str:
-        # Summary prompt call goes here #
-
-        sum_query=""
-
-        response = self.client.responses.create(
-        model=self.model,
-        input=sum_query
+    def summarize_with_openai(self, texts):
+        joined = " ".join(texts)
+        prompt = f"""The following paragraphs contain information that belongs to the same
+                    groups in a knowledge graph. Give a summary of the most important concepts
+                    within the paragraph written in the style of a textbook paragraph. Keep it short,
+                    no need for an introduction for the summary. Just write three or four sentences, maximum
+                    five if you feel like there is more needed:\n\n{joined}"""
+        response = self.client.chat.completions.create(
+            model=self.model,
+            messages=[{"role": "user", "content": prompt}],
         )
-
-        return response.output_text
+        return response
 
 ### Example query
 if __name__ == "__main__":

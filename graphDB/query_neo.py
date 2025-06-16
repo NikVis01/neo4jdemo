@@ -5,6 +5,8 @@ import os
 
 load_dotenv()
 
+### OBS: THIS IS OLD
+
 """
 URI = "bolt://localhost:7687"
 USER = "neo4j"

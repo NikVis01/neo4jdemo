@@ -1,6 +1,7 @@
 import openai
 from openai import OpenAI
 import os
+import pandas as pd
 
 # client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
@@ -23,6 +24,18 @@ class LLM():
         response = self.client.responses.create(
         model=self.model,
         input=self.prompt + query
+        )
+
+        return response.output_text
+    
+    def summarize_community(self, community_df: pd.DataFrame) -> str:
+        # Summary prompt call goes here #
+
+        sum_query=""
+
+        response = self.client.responses.create(
+        model=self.model,
+        input=sum_query
         )
 
         return response.output_text

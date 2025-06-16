@@ -1,3 +1,5 @@
+### Idea for this file: Refractor into node generation/parameter setting and scripting/indexing/so on
+
 from neo4j import GraphDatabase
 import pandas as pd
 import os
@@ -10,7 +12,15 @@ from embedding import SickEmbedder
 from sklearn.metrics.pairwise import cosine_similarity
 import numpy as np
 
+import sys
+import os
+
 from neo4j.exceptions import ClientError
+
+# Add parent directory to sys.path
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+from infer import LLM
 
 load_dotenv()
 
@@ -40,6 +50,8 @@ class GenerateNeo():
         self.header_df = embedder.embed_header(df.copy())
         self.URI = "bolt://localhost:7687"
         self.AUTH = ("neo4j", os.getenv("DB_PASSWORD"))
+
+        self.llm=LLM()
 
 
     def create_relation_df(self, threshold: float = 0.3, top_k: int = 3) -> pd.DataFrame:
@@ -151,6 +163,57 @@ class GenerateNeo():
         """)
         
 
+    def fetch_embeddings_and_texts(self, tx):
+        query = """
+        MATCH (n:Concept)
+        WHERE n.communityId IS NOT NULL AND n.embedding IS NOT NULL AND n.paragraph IS NOT NULL
+        RETURN n.communityId AS commId, n.embedding AS embedding, n.paragraph AS paragraph
+        """
+        result = tx.run(query)
+        data = {}
+        for record in result:
+            comm = record["commId"]
+            vec = record["embedding"]
+            para = record["paragraph"]
+            data.setdefault(comm, {"embeddings": [], "paragraphs": []})
+            data[comm]["embeddings"].append(vec)
+            data[comm]["paragraphs"].append(para)
+        return data
+
+    def summarize_with_openai(self, texts):
+        response = self.llm.summarize_with_openai(texts)
+
+        return response.choices[0].message.content.strip()
+
+    def write_summary_node(self, tx, comm_id, avg_vec, summary_text):
+        title = f"Community_{comm_id}_Summary"
+        query = """
+        MERGE (s:Summary {communityId: $comm_id})
+        SET s.embedding = $avg_vec,
+            s.title = $title,
+            s.summaryText = $summary_text
+        """
+        tx.run(query, comm_id=comm_id, avg_vec=avg_vec, summary_text=summary_text, title=title)
+
+    def connect_summary(self, tx):
+        tx.run("""
+        MATCH (n:Concept)
+        WHERE n.communityId IS NOT NULL
+        MATCH (s:Summary {communityId: n.communityId}) 
+        MERGE (n)-[:BELONGS_TO]->(s)
+        MERGE (s)-[:HAS_CONTENT]->(n)
+        """)
+
+    def create_summary_index(self, tx):
+        tx.run("""
+        CREATE VECTOR INDEX summary_embedding_index IF NOT EXISTS
+        FOR (n:Summary) ON (n.embedding)
+        OPTIONS { indexConfig: {
+        `vector.dimensions`: 1500,
+        `vector.similarity_function`: "cosine"
+        }}
+        """)
+
     ### ---- RUNNING SCRIPTS SEQUENTIALLY ---- ###
     def run_scripts(self) -> None:
         with GraphDatabase.driver(self.URI, auth=self.AUTH) as driver:
@@ -186,6 +249,17 @@ class GenerateNeo():
 
             print("LOG: Edge relations created.")
 
+            try:
+                with driver.session() as session:
+                    session.execute_write(
+                        self.clear_catalog
+                    )
+                    print("LOG: Old graph catalog cleared.")
+
+            except ClientError:
+                # Turns out the graph catalog didn't exist before so we skip clearing it.
+                pass
+
             # Creating graph catalog for Liden method later
             with driver.session() as session:
                 try:
@@ -199,17 +273,6 @@ class GenerateNeo():
                     # Might already exist and that's fine
                     print("LOG: Graph Catalog already exists.")
                     pass
-
-            try:
-                with driver.session() as session:
-                    session.execute_write(
-                        self.clear_catalog
-                    )
-                    print("LOG: Old graph catalog cleared.")
-
-            except ClientError:
-                # Turns out the graph catalog didn't exist before so we skip clearing it.
-                pass
 
             with driver.session() as session:
                 session.execute_write(
@@ -228,6 +291,26 @@ class GenerateNeo():
                     self.label_hierarchy
                 )
                 print("LOG: Label Hierarchy established.")
+
+            #### --- LAST PART - SUMMARY NODES --- ###
+
+            with driver.session() as session:
+                community_data = session.execute_read(self.fetch_embeddings_and_texts)
+
+                for comm_id, content in community_data.items():
+                    vectors = content["embeddings"]
+                    paragraphs = content["paragraphs"]
+
+                    mean_vec = np.mean(np.array(vectors), axis=0).tolist()
+                    summary = self.summarize_with_openai(paragraphs)
+
+                    session.execute_write(self.write_summary_node, comm_id, mean_vec, summary)
+
+                    session.execute_write(self.connect_summary)
+
+                    session.execute_write(self.create_summary_index)
+
+                    print("LOG: Thank fuck this worked, summary nodes generated.")
 
             print("LOG: SUCCESS! Graph has been initialized. Closing driver...")
 

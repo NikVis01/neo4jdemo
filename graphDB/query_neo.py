@@ -117,6 +117,24 @@ class QueryNeo():
         self.driver.close()  
 
         return result
-                
+    
 
+    ### BELOW IS ONLY FOR EXPLORATORY DATA ANALYSIS OF THE GRAPH DATABASE AND QUERYING ###
+    def exploratory_script(self,tx, embedded_query: list[float], cypher_script) -> None:
+        query_template = Template(cypher_script)
+        final = query_template.safe_substitute(embedded_query=embedded_query)
+
+        tx.run(final)
+
+    def session_exec_gds(self,tx, embedded_query: list[float], cypher_script="") -> None:
+        with self.driver as driver:
+            driver.verify_connectivity()
+            
+            with driver.session() as session:
+
+                result = session.execute_write(self.exploratory_script, embedded_query=embedded_query, cypher_script=cypher_script)
         
+        self.driver.close()  
+
+        return result
+                

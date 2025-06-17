@@ -4,3 +4,6 @@ llama_cloud_services==0.6.20
 pyPDF2==3.0.1
 dotenv==0.9.9
 openai==1.85.0
+streamlit==1.45.1
+seaborn==0.13.2
+matplotlib==3.10.3

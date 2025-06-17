@@ -61,6 +61,7 @@ class QueryNeo():
         print(chap_cont)
         return chap_cont
     
+    # Currently unused as far as I'm aware:
     def get_text_using_key(self, tx, embedded_keyword: list[float]) -> str: # tx is the transaction object w method run() for cypher scripts in neo4j
 
         cypherScriptTemplate = Template("""
@@ -115,6 +116,3 @@ class QueryNeo():
         self.driver.close()  
 
         return result
-                
-
-        

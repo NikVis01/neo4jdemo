@@ -30,7 +30,7 @@ class Main():
         self.query = ""
         self.db_select = ""
 
-        self.embedder = SickEmbedder(dims=300)
+        self.embedder = SickEmbedder(dims=1500)
         self.llm = LLM()
         self.neo_search = QueryNeo()
         self.post_search = QueryPostgres()

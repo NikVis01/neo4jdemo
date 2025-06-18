@@ -21,28 +21,58 @@ class QueryNeo():
     def get_body_text(self, tx, embedded_query: list[float]) -> str: # tx is the transaction object w method run() for cypher scripts in neo4j
 
         cypherScriptTemplate = Template("""
-        // Step 1: Find the top-1 best matching Chapter
+        // Step 1: Find the most similar :Summary node
         CALL db.index.vector.queryNodes('summary_embedding_index', 1, $queryEmbedding)
-        YIELD node AS summary, score AS summaryScore
+        YIELD node AS summary, score
 
-        // Step 2: Match paragraphs (Theme nodes) within that Chapter
-        MATCH (summary)-[:REPRESENTS]->(p:Concept)
-
-        // Step 3: Score each paragraph for relevance
-        WITH summary, summaryScore, p,
-            gds.similarity.cosine(p.embedding, $queryEmbedding) AS paraScore
-        WHERE paraScore IS NOT NULL
-
-        // Step 4: Pick top 3 most relevant paragraphs
-        ORDER BY paraScore DESC
+        // Step 2: Traverse child :Concept nodes with top similarity at each level
+        CALL (summary) {
+        // Level 1
+        MATCH (summary)-[:REPRESENTS]->(c1:Concept)
+        CALL db.index.vector.queryNodes('concept_embedding_index', 10, $queryEmbedding)
+        YIELD node AS candidate1, score AS score1
+        WHERE candidate1 = c1
+        WITH candidate1 AS concept1
+        ORDER BY score1 DESC
         LIMIT 1
 
-        // Step 5: Collect paragraphs, return both
-        WITH collect(summary.summaryText) AS summaryContent, collect(p.paragraph) AS topParagraphs
+        // Level 2
+        OPTIONAL CALL (concept1) {
+            MATCH (concept1)-[:SIMILAR_TO]->(c2:Concept)
+            CALL db.index.vector.queryNodes('concept_embedding_index', 10, $queryEmbedding)
+            YIELD node AS candidate2, score AS score2
+            WHERE candidate2 = c2 AND elementId(candidate2) <> elementId(concept1)
+            WITH candidate2 AS concept2
+            ORDER BY score2 DESC
+            LIMIT 1
+            RETURN concept2
+        }
 
+        // Level 3
+        OPTIONAL CALL (concept1, concept2) {
+            MATCH (concept2)-[:SIMILAR_TO]->(c3:Concept)
+            CALL db.index.vector.queryNodes('concept_embedding_index', 10, $queryEmbedding)
+            YIELD node AS candidate3, score AS score3
+            WHERE candidate3 = c3
+            AND elementId(candidate3) <> elementId(concept2)
+            AND elementId(candidate3) <> elementId(concept1)
+            WITH candidate3 AS concept3
+            ORDER BY score3 DESC
+            LIMIT 1
+            RETURN concept3
+        }
+
+        // Return only required paragraph properties
+        RETURN
+            concept1.paragraph AS paragraph1,
+            concept2.paragraph AS paragraph2,
+            concept3.paragraph AS paragraph3
+        }
+
+        // Final structured return: exclude embeddings entirely
         RETURN {
-        summaryContent: summaryContent,
-        topParagraphs: topParagraphs
+        summaryContent: summary.summaryText,
+        topParagraphs: [paragraph1, paragraph2, paragraph3]
         } AS result
         """)
 
@@ -50,15 +80,17 @@ class QueryNeo():
         result = tx.run(cypherScript)
 
         result_dict = result.data()[0]["result"]
-        """
+        
         top_paragraphs = "\n\n".join(result_dict["topParagraphs"])
-
+        """
         print(top_paragraphs)
         """
-        print(result_dict)
+        # print(result_dict)
 
-        chap_cont = str("Summary Content: \n" + str(result_dict["summaryContent"][0]) + "\n" + "Paragraph content: \n" + str(result_dict["topParagraphs"][0])+"\n")
-        print(chap_cont)
+        chap_cont = str("Summary Content: \n" + str(result_dict["summaryContent"]) + "\n\n" + 
+                "Paragraph content: \n" + top_paragraphs + "\n")
+
+        # print(chap_cont)
         return chap_cont
     
     # Currently unused as far as I'm aware:
@@ -96,8 +128,8 @@ class QueryNeo():
         result_dict = result.data()[0]["result"]
 
         top_paragraphs = "\n\n".join(result_dict["topParagraphs"])
-        print(top_paragraphs)
-        #print(type(result_dict))
+        # print(top_paragraphs)
+        # print(type(result_dict))
         chap_cont = str("Chapter intro: \n" + result_dict["chapterIntro"]) + "\n\n" + "Paragraph content: \n" + str(top_paragraphs)+"\n"
         # print(chap_cont)
 

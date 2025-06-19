@@ -35,14 +35,22 @@ class Main():
         self.neo_search = QueryNeo()
         self.post_search = QueryPostgres()
 
-    def neoVectorSearch(self) -> str:
+    def neoVectorSearch(self, search_select: int):
         
         embedded_query = self.embedder.get_embedding_str(self.query)
         # print(embedded_query)
-        content = self.neo_search.session_execute(embedded_query=embedded_query)
-        # content = ""
+        if search_select == 0:
+            content = self.neo_search.session_execute_narrow(embedded_query=embedded_query)
+            return content
+            # content = ""
 
-        return content
+        elif search_select == 1:
+            content = self.neo_search.session_execute_shallow(embedded_query=embedded_query)
+            return content
+
+        else:
+            print("WTF")
+            return ValueError
     
     def postgresVectorSearch(self):
         embedded_query = self.embedder.get_embedding_str(self.query)
@@ -52,7 +60,7 @@ class Main():
 
         return content
     
-    def feedLLM(self, db_select: str, query: str) -> None:
+    def feedLLM(self, db_select: str, query: str, search_select: int) -> None:
         self.db_select = db_select
 
         # We should try putting this into the LLM to minimize hallucinations:
@@ -72,7 +80,7 @@ class Main():
         prompt = f"{query}\n"
 
         if db_select == "0":
-            neo4j_content = self.neoVectorSearch()
+            neo4j_content = self.neoVectorSearch(search_select=search_select)
             prompt += f"{neo4j_content}\n"
 
         elif db_select == "1":
@@ -88,7 +96,7 @@ class Main():
 
     
     def calcCosine(self, str1: str, str2: str) -> int:
-        ### Calc cosine similarity between Natural and Planted Forests
+        ### Calc cosine similarity between two vectors: For testing
         vec1 = np.array(self.embedder.get_embedding_str(str1))
         vec2 = np.array(self.embedder.get_embedding_str(str2))
 
@@ -100,15 +108,11 @@ class Main():
     
 if __name__ == "__main__":
     obj = Main()
-    """
-    similarity = obj.calcCosine(str1="",
-                   str2="")
-                   """
-    # print(similarity)
 
-    db_select = input("Which DB would you like to use? 0 for neo4j, 1 for Postgres: ")
+    db_select = input("Neo4j: 0, Postgres: 1 \nSELECT: ")
+    search_selected=int(input("NSA: 0, SSA: 1  \nSELECT: "))
     user_query = input("Query: ")
     
-    obj.feedLLM(db_select=db_select,query=user_query)
+    obj.feedLLM(db_select=db_select,query=user_query,search_select=search_selected)
 
 

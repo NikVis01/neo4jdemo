@@ -18,6 +18,7 @@ class QueryNeo():
         self.PASSWORD = os.getenv("DB_PASSWORD")
         self.driver = GraphDatabase.driver(self.URI, auth=(self.USER, self.PASSWORD))
 
+    ### ----- Narrow Search Algorithm ----- ###
     def get_body_text(self, tx, embedded_query: list[float]) -> str: # tx is the transaction object w method run() for cypher scripts in neo4j
 
         cypherScriptTemplate = Template("""
@@ -80,12 +81,8 @@ class QueryNeo():
         result = tx.run(cypherScript)
 
         result_dict = result.data()[0]["result"]
-        
+
         top_paragraphs = "\n\n".join(result_dict["topParagraphs"])
-        """
-        print(top_paragraphs)
-        """
-        # print(result_dict)
 
         chap_cont = str("Summary Content: \n" + str(result_dict["summaryContent"]) + "\n\n" + 
                 "Paragraph content: \n" + top_paragraphs + "\n")
@@ -93,6 +90,30 @@ class QueryNeo():
         # print(chap_cont)
         return chap_cont
     
+
+    ### ----- Shallow Search Algorithm ----- ###
+    def get_summary_content(self, tx, embedded_query: list[float]) -> str:
+        cypherScriptTemplate = Template("""
+        WITH $queryEmbedding AS targetEmbedding
+        MATCH (s:Summary)
+        WHERE s.embedding IS NOT NULL
+        WITH s, gds.similarity.cosine(s.embedding, targetEmbedding) AS score
+        RETURN s.summaryText AS summary, score
+        ORDER BY score DESC
+        LIMIT 3
+        """)
+
+        result = tx.run(cypherScriptTemplate.safe_substitute(queryEmbedding=embedded_query))
+
+        results_list = result.data()
+
+        result_str=""
+        for i in range(len(results_list)-1):
+            result_str += f"Paragraph: {i+1} \n" + results_list[i]["summary"] +f"\n"
+ 
+        print(result_str)
+        return result_str            
+                                        
     # Currently unused as far as I'm aware:
     def get_text_using_key(self, tx, embedded_keyword: list[float]) -> str: # tx is the transaction object w method run() for cypher scripts in neo4j
 
@@ -133,17 +154,31 @@ class QueryNeo():
         chap_cont = str("Chapter intro: \n" + result_dict["chapterIntro"]) + "\n\n" + "Paragraph content: \n" + str(top_paragraphs)+"\n"
         # print(chap_cont)
 
-        #print(result_dict) 
+        # print(result_dict) 
 
         return chap_cont
 
-    def session_execute(self, embedded_query: list[float]) -> str:
+    ### For executing NSA
+    def session_execute_narrow(self, embedded_query: list[float]) -> str:
         with self.driver as driver:
             driver.verify_connectivity()
             
             with driver.session() as session:
 
                 result = session.execute_write(self.get_body_text, embedded_query=embedded_query)
+        
+        self.driver.close()  
+
+        return result
+    
+    ### For executing SSA
+    def session_execute_shallow(self, embedded_query: list[float]) -> str:
+        with self.driver as driver:
+            driver.verify_connectivity()
+            
+            with driver.session() as session:
+
+                result = session.execute_write(self.get_summary_content, embedded_query=embedded_query)
         
         self.driver.close()  
 

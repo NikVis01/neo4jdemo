@@ -67,15 +67,20 @@ class Main():
         # original_query = query
         
         enhanced_query = self.llm.get_response(f"{query}\n" + 
-                                               "Use this user query and give a very short info text" +
-                                               " yourself. The text should emulate how a textbook " +
-                                               "would answer the question or provide info within" +
-                                               " a paragraph. Give two or three sentences.")
+                                               """
+                                               Enrich this query with a few words that are related to
+                                               the concepts mentioned in it so that an embedding of 
+                                               a textbook paragraph containing it is more similar to the
+                                               enriched query. Only answer with the enriched query. Leave out the original
+                                               query.
+                                               """)
         
         
-        # print("Enhanced Query:" + enhanced_query)
+        print("Enhanced Query: " + enhanced_query)
         
         self.query = enhanced_query
+
+        # self.query = query
 
         prompt = f"{query}\n"
 

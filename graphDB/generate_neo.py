@@ -54,7 +54,7 @@ class GenerateNeo():
         self.llm=LLM()
 
 
-    def create_relation_df(self, threshold: float = 0.3, top_k: int = 3) -> pd.DataFrame:
+    def create_relation_df(self, threshold: float = 0.3, top_k: int = 5) -> pd.DataFrame:
 
         embeddings = np.stack(self.embedding_df.iloc[:, 1].to_list())
         similarity_matrix = cosine_similarity(embeddings)
@@ -104,6 +104,7 @@ class GenerateNeo():
         tx.run("""
         MATCH (a:Concept {title: $source}), (b:Concept {title: $target})
         MERGE (a)-[:SIMILAR_TO {score: $score}]->(b)
+        MERGE (b)-[:SIMILAR_TO {score: $score}]->(a)
         """, source=source, target=target, score=score)
 
 

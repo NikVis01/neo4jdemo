@@ -87,7 +87,7 @@ class QueryNeo():
         chap_cont = str("Summary Content: \n" + str(result_dict["summaryContent"]) + "\n\n" + 
                 "Paragraph content: \n" + top_paragraphs + "\n")
 
-        # print(chap_cont)
+        print(chap_cont)
         return chap_cont
     
 

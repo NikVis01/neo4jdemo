@@ -23,9 +23,9 @@ This assignment aims to explore the usage of knowledge graphs in answering quest
 * [LangChain](https://neo4j.com/labs/genai-ecosystem/langchain/#\_knowledge_graph_construction)
 * [LlamaIndex](https://neo4j.com/labs/genai-ecosystem/llamaindex/)
 
-# CURRENT STRUCT
+# CURRENT DB STRUCTURE
 
-![image](https://github.com/user-attachments/assets/564929ad-d8af-4fe6-b169-6dfee23b7902)
+![image](https://github.com/user-attachments/assets/d05d083d-aa18-4e50-ba72-a1eeb3d33e46)
 
 // Here's some useful Cypher Scripts:
 

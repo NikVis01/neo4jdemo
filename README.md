@@ -29,17 +29,17 @@ This assignment aimed to explore the usage of knowledge graphs in answering ques
 
 
 ## DEV TEAM LEAD NOTES & DEV TEAM Q&A:
-N: Super impressed with your initiative in the implementation with very little input from Alvaro, Robert, and I. You should be proud of this work.
+### N: Super impressed with your initiative in the implementation with very little input from Alvaro, Robert, and I. You should be proud of this work.
    I agree with your choice of "Intent Expansion" (I typically call this "Query Expansion" or "Query Preprocessing")
    Interesting choice on not wanting to walk too far on the graph traversal. I know little about KGs but I can see how this would make sense given that these are high school textbooks and typically assignments don't involve more 
    interconnected knowledge than a couple of steps in the tree. Eg. students aren't required to answer questions relating eg. cloud formations to migration patterns.
 
-Q: What is the format of the Neo4J graph responses? I see in the demo you show just the Content but I recall that KGs often return relationships (eg. x -> relation to -> y)
+### Q: What is the format of the Neo4J graph responses? I see in the demo you show just the Content but I recall that KGs often return relationships (eg. x -> relation to -> y)
 
 A: It depends on how the Cypher query is constructed and its result returned. In our case the relationships weren't expressive or valuable directly our return dictionary did not contain them. This was mostly a limit we set for ourselves, 
    and we've since learned that using an LLM we could embed meaning into relationships between nodes as well.
 
-Q: What are the key applications you see of KGs as opposed to standard vector DB search? Is there more/less value in using it in other subjects than geography?
+### Q: What are the key applications you see of KGs as opposed to standard vector DB search? Is there more/less value in using it in other subjects than geography?
 
 A: There are a few both pros and cons. Most importantly it lets us query by semantic similiarity (in our implementation), we sort of follow the red thread of the book to some extent while also searching by query. 
    You take into account similarity between different parts of the book, potentially global (also where community generation with the Leiden method is valuable). 

@@ -1,4 +1,4 @@
-# neo4jdemo
+# Twiga Neo4j Demo
 
 # Knowledge Graph Q&A
 
@@ -12,60 +12,41 @@ For more information on the value of knowledge graphs, I suggest reading the Gra
 
 ### Assignment:
 
-This assignment aims to explore the usage of knowledge graphs in answering questions to TIE textbooks. There are many different libraries one could use to leverage knowledge graphs - under the hood nearly all of them use a graph database called Neo4j (a Swedish company based in Malmö!). Your task is to:
+This assignment aimed to explore the usage of knowledge graphs in answering questions to TIE textbooks. There are many different libraries one could use to leverage knowledge graphs - under the hood nearly all of them use a graph database called Neo4j (a Swedish company based in Malmö!). Our task was to:
 
 1. Construct a knowledge graph from a textbook PDF 
    1. Can you visualize the knowledge graph somehow?
 2. Evaluate performance relative to a baseline RAG by comparing answers from identical queries relevant to the textbook contents.
    1. Please perform RAG in your preferred manner - no need for anything fancy. LangChain naive RAG tutorial: [link](https://python.langchain.com/docs/tutorials/rag/).
 
+... And we succeeded!
+
 * [Neo4j / OpenAI](https://neo4j.com/blog/news/graphrag-python-package/)
-* [LangChain](https://neo4j.com/labs/genai-ecosystem/langchain/#\_knowledge_graph_construction)
-* [LlamaIndex](https://neo4j.com/labs/genai-ecosystem/llamaindex/)
 
 # CURRENT DB STRUCTURE
 
 ![image](https://github.com/user-attachments/assets/d05d083d-aa18-4e50-ba72-a1eeb3d33e46)
 
-// Here's some useful Cypher Scripts:
 
-// Creating/Modifying primary and tertriary nodes:
-MERGE (t:Themes {name:"Themes"})
+## DEV TEAM LEAD NOTES & DEV TEAM Q&A:
+N: Super impressed with your initiative in the implementation with very little input from Alvaro, Robert, and I. You should be proud of this work.
+   I agree with your choice of "Intent Expansion" (I typically call this "Query Expansion" or "Query Preprocessing")
+   Interesting choice on not wanting to walk too far on the graph traversal. I know little about KGs but I can see how this would make sense given that these are high school textbooks and typically assignments don't involve more 
+   interconnected knowledge than a couple of steps in the tree. Eg. students aren't required to answer questions relating eg. cloud formations to migration patterns.
 
-MERGE (a:Theme {name:"Fishing"})
-SET a.content = "Fishing involves catching fish and other water creatures from oceans, lakes, seas, dams, rivers and ponds for domestic or commercial purposes."
+Q: What is the format of the Neo4J graph responses? I see in the demo you show just the Content but I recall that KGs often return relationships (eg. x -> relation to -> y)
 
-MERGE (b:Theme {name:"Forestry"})
-SET b.content = "Forestry is a set of practises that involve managing forests for ecological, social and economic purposes."
+A: It depends on how the Cypher query is constructed and its result returned. In our case the relationships weren't expressive or valuable directly our return dictionary did not contain them. This was mostly a limit we set for ourselves, 
+   and we've since learned that using an LLM we could embed meaning into relationships between nodes as well.
 
-MERGE (c:Theme {name:"Natural Forests"})
-SET c.content = "Natural forests are the forests that generated themselves naturally."
+Q: What are the key applications you see of KGs as opposed to standard vector DB search? Is there more/less value in using it in other subjects than geography?
 
-MERGE (d:Theme {name:"Planted Forests"})
-SET d.content = "Planted forests are those in which trees are planted by human beings. They are commonly known as grown trees"
+A: There are a few both pros and cons. Most importantly it lets us query by semantic similiarity (in our implementation), we sort of follow the red thread of the book to some extent while also searching by query. 
+   You take into account similarity between different parts of the book, potentially global (also where community generation with the Leiden method is valuable). 
+   In a normal rag you only consider similarity of chunks to the query but we do this too as well as similarity between parts of the book. 
+   Touching on this is also how we restructure the books content not trusting the book's initial structure, which we think can potentially showcase more complex relationships and similarity between chunks, especially when using an LLM 
+   to create the relationships.
 
-// Creating/Modifying relationships between nodes:
+   We're unsure what impact the subject can have but we've seen certain types of user queries affect the value of graphRAG. 
+   Queries performed worse when the topic was less connected to its neighbors, so it's better for books that are more specialized and tries to build a broad view of a subject. We're still unsure of this and would love to research more.
 
-// ── 3. Link the master node to all individual Theme nodes
-MATCH (root:Themes {name: "Themes"})
-
-MATCH (theme:Theme)
-WHERE theme.name IN ["Fishing", "Forestry", "Planted Forests", "Natural Forests"]
-
-MERGE (root)-[:HAS_THEME]->(theme)
-
-
-## DEV NOTES: TODO LIST (SOME IDEAS)
-
-1. Greater node granularity and adhesion to textbook struct such as:
-   (Chapter: {name: "Human Activities", "pages: 0-whatever, embedding: [...]}) // Chapter/Heading + MAYBE summary or that stupid intro paragraph no one reads
-         --[:HAS_SUBTHEME]→ (:Theme {name: "Planted Forests", embedding: [...]}) // Subheadings + embeddings of introductory/summarry paragraph
-            --[:HAS_TEXT]→ (:BodyText {text: "...", order: 1, embedding: [...]})  // Paragraph + embedding for vector search
-
-2. Embed shit. Chose model and dims. What to include and so on
-
-3. Choose top-K search. Cosine prolly?
-
-4. Parse & Embed a good amount (maybe 2 chapters)
-
-5. Retrieve-loop and sampling. Try to collect metadata along the way like chapter, page num and so on.
